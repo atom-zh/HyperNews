@@ -27,7 +27,7 @@ def get_feed_dict(model, data, start, end):
 
 def train(args):
 
-    log_file=open('../data/logs/log.txt','a')
+    log_file=open('./data/logs/log.txt','a')
     log_file.write('\n'+'\n')
     log_file.write('-------------------------------------------\n')
     log_file.write(str(args)+'\n')
@@ -37,11 +37,11 @@ def train(args):
     model = MODEL(args)
     # CUDA_VISIBLE_DEVICES=args.GPU_DEVICE
 
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
+        sess.run(tf.compat.v1.local_variables_initializer())
 
-        saver = tf.train.Saver(write_version=tf.train.SaverDef.V2, max_to_keep=10)
+        saver = tf.compat.v1.train.Saver(write_version=tf.compat.v1.train.SaverDef.V2, max_to_keep=10)
 
         print('loading data..')
         
@@ -55,7 +55,7 @@ def train(args):
             # training
             print('epoch:'+str(step))
             args.is_train=True
-            if step is not 0:
+            if step != 0:
                 for i in range(args.train_file_num):
                     start_list = list(range(0, train_data.size, args.batch_size))
                     np.random.shuffle(start_list)

@@ -9,9 +9,11 @@ from sklearn.metrics import recall_score
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_X_y
 
-word2vec_path = '../data/content_data/word2vec_wv.model'
-doc2vec_path = '../data/content_data/doc2vec.npy'
-doc_topics_path = '../data/content_data/doc_topics.npy'
+tf.compat.v1.disable_eager_execution()
+
+word2vec_path = './data/content_data/word2vec_wv.model'
+doc2vec_path = './data/content_data/doc2vec.npy'
+doc_topics_path = './data/content_data/doc_topics.npy'
 
 
 class MODEL(object):
@@ -22,40 +24,40 @@ class MODEL(object):
         self._build_train(args)
 
     def _build_inputs(self, args):
-        with tf.name_scope('input'):
-            self.news_title = tf.placeholder(
+        with tf.compat.v1.name_scope('input'):
+            self.news_title = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, args.max_title_length], name='news_title')
-            self.clicked_titles = tf.placeholder(
+            self.clicked_titles = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, args.max_click_history, args.max_title_length], name='clicked_titles')
-            self.active_time = tf.placeholder(
+            self.active_time = tf.compat.v1.placeholder(
                 dtype=tf.float32, shape=[None, 20], name='active_time')
-            self.labels = tf.placeholder(
+            self.labels = tf.compat.v1.placeholder(
                 dtype=tf.float32, shape=[None, 1], name='labels')
-            self.time_label = tf.placeholder(
+            self.time_label = tf.compat.v1.placeholder(
                 dtype=tf.float32, shape=[None, 1], name='time_label')
-            self.news_category = tf.placeholder(
+            self.news_category = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, 3], name='category')
-            self.user_city = tf.placeholder(
+            self.user_city = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, 1], name='city')
-            self.user_region = tf.placeholder(
+            self.user_region = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, 1], name='region')
-            self.clicked_category = tf.placeholder(
+            self.clicked_category = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, args.max_click_history, 3], name='clicked_category')
-            self.news_age = tf.placeholder(
+            self.news_age = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, 1], name='news_age')
-            self.news_id = tf.placeholder(
+            self.news_id = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, 1], name='news_id')
-            self.news_len = tf.placeholder(
+            self.news_len = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, 1], name='news_len')
-            self.clicked_news_id = tf.placeholder(
+            self.clicked_news_id = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, args.max_click_history, 1], name='clicked_news_id')
-            self.clicked_news_len = tf.placeholder(
+            self.clicked_news_len = tf.compat.v1.placeholder(
                 dtype=tf.int32, shape=[None, args.max_click_history, 1], name='clicked_news_len')
-            self.is_train = tf.placeholder(dtype=bool, shape=None, name='is_train')
-            self.weights = tf.placeholder(dtype=tf.float32, shape=[None, 1], name='weights')
+            self.is_train = tf.compat.v1.placeholder(dtype=bool, shape=None, name='is_train')
+            self.weights = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, 1], name='weights')
 
     def _build_model(self, args):
-        with tf.name_scope('embeddings', ):
+        with tf.compat.v1.name_scope('embeddings', ):
             word_embs = KeyedVectors.load_word2vec_format(word2vec_path)
             doc_emb = np.load(doc2vec_path).tolist()
             topic_emb = np.load(doc_topics_path).tolist()
@@ -69,22 +71,22 @@ class MODEL(object):
             self.doc_embeddings = tf.concat([zero_doc_embedding, doc_embedding], axis=0)
 
             zero_category_embedding = tf.zeros(shape=[1, 100], dtype=tf.float32)
-            category_embedding = tf.Variable(tf.random_normal((260, 100), stddev=1), trainable=True,
+            category_embedding = tf.Variable(tf.random.normal((260, 100), stddev=1), trainable=True,
                                              name='category_embedding')
             self.category_embeddings = tf.concat([zero_category_embedding, category_embedding], axis=0)
 
             self.topic_embeddings = tf.Variable(topic_emb, dtype=tf.float32, trainable=False, name='topic_embedding')
 
 
-            self.city_embeddings = tf.Variable(tf.random_normal((5050, 50), stddev=1), trainable=True,
+            self.city_embeddings = tf.Variable(tf.random.normal((5050, 50), stddev=1), trainable=True,
                                                name='city_embedding')
-            self.region_embeddings = tf.Variable(tf.random_normal((1100, 50), stddev=1), trainable=True,
+            self.region_embeddings = tf.Variable(tf.random.normal((1100, 50), stddev=1), trainable=True,
                                                  name='region_embedding')
-            self.age_embeddings = tf.Variable(tf.random_uniform(shape=[90, 100], minval=-1, maxval=1), trainable=True,
+            self.age_embeddings = tf.Variable(tf.random.uniform(shape=[90, 100], minval=-1, maxval=1), trainable=True,
                                               name='age_embedding')
 
             zero_len_embedding = tf.zeros(shape=[1, 50], dtype=tf.float32)
-            len_embedding = tf.Variable(tf.random_uniform(shape=[1000, 50], minval=-1, maxval=1), trainable=True,
+            len_embedding = tf.Variable(tf.random.uniform(shape=[1000, 50], minval=-1, maxval=1), trainable=True,
                                         name='len_embedding')
             self.len_embeddings = tf.concat([zero_len_embedding, len_embedding], axis=0)
 
@@ -102,32 +104,32 @@ class MODEL(object):
         self.news_embedding = news_embedding_p
         self.user_embedding = user_embedding
 
-        self.unnormized_p = tf.reshape(tf.diag_part(tf.matmul(news_embedding_p, user_embedding, transpose_b=True)),
+        self.unnormized_p = tf.reshape(tf.linalg.tensor_diag_part(tf.matmul(news_embedding_p, user_embedding, transpose_b=True)),
                                        shape=[-1, 1])
         self.unnormized_p = self.batch_normal(self.unnormized_p, args)
         self.p = tf.sigmoid(self.unnormized_p)
 
-        with tf.variable_scope('w_classification', reuse=tf.AUTO_REUSE):
-            w_cla = tf.get_variable(name='w_cla', shape=[400, 20], dtype=tf.float32, trainable=True)
+        with tf.compat.v1.variable_scope('w_classification', reuse=tf.compat.v1.AUTO_REUSE):
+            w_cla = tf.compat.v1.get_variable(name='w_cla', shape=[400, 20], dtype=tf.float32, trainable=True)
         self.user_news = tf.concat([user_embedding, news_embedding_t], axis=-1)
         self.time_score = tf.matmul(self.user_news, w_cla)
         self.time_score = tf.nn.softmax(self.time_score, axis=-1)
-        self.time_pre = tf.argmax(self.time_score, 1)
-        self.time_true = tf.argmax(self.active_time, 1)
+        self.time_pre = tf.argmax(input=self.time_score, axis=1)
+        self.time_true = tf.argmax(input=self.active_time, axis=1)
 
     def _explicit_encoder(self, args, news_title, news_category):
         # news_categorys=self.id2categorys[self.news_id]
-        title = tf.nn.embedding_lookup(self.word_embeddings, news_title)
-        category = tf.nn.embedding_lookup(self.category_embeddings, news_category)
-        mean_category = tf.reduce_mean(category, axis=1)
+        title = tf.nn.embedding_lookup(params=self.word_embeddings, ids=news_title)
+        category = tf.nn.embedding_lookup(params=self.category_embeddings, ids=news_category)
+        mean_category = tf.reduce_mean(input_tensor=category, axis=1)
         _mean_category = tf.reshape(mean_category, [-1, 100])
         # title=tf.reshape(title,[args.batch_size,args.max_title_length,args.word_dim])
         # categorys=tf.nn.embedding_lookup(self.category_embeddings,news_categorys)
         title_emb = []
         for filter_size in args.filter_sizes:
-            conv = tf.layers.conv1d(inputs=title, filters=args.n_filters, kernel_size=filter_size)
+            conv = tf.compat.v1.layers.conv1d(inputs=title, filters=args.n_filters, kernel_size=filter_size)
             conv = self.batch_normal(conv, args)
-            pool = tf.layers.max_pooling1d(inputs=conv, pool_size=args.max_title_length - filter_size + 1, strides=1)
+            pool = tf.compat.v1.layers.max_pooling1d(inputs=conv, pool_size=args.max_title_length - filter_size + 1, strides=1)
             title_emb.append(pool)
         title_emb = tf.concat(title_emb, axis=1)
         title_emb = tf.reshape(title_emb, [-1, args.n_filters * len(args.filter_sizes)])
@@ -136,39 +138,39 @@ class MODEL(object):
         # explicit_emb=tf.concat([title_emb,category_emb])
         concat_emb = tf.concat([title_emb, _mean_category], axis=1)
         # explicit_emb=title_emb
-        explicit_emb = tf.layers.dense(inputs=concat_emb, units=200)
-        explicit_emb = tf.layers.dropout(inputs=explicit_emb, rate=args.dropout_rate, training=self.is_train)
+        explicit_emb = tf.compat.v1.layers.dense(inputs=concat_emb, units=200)
+        explicit_emb = tf.compat.v1.layers.dropout(inputs=explicit_emb, rate=args.dropout_rate, training=self.is_train)
         explicit_emb = tf.tanh(self.batch_normal(explicit_emb, args))
         return tf.reshape(explicit_emb, [-1, 200])
 
     def _implicit_encoder(self, args, news_id, news_len):
-        news_topic = tf.nn.embedding_lookup(self.topic_embeddings, news_id)
-        news_text = tf.nn.embedding_lookup(self.doc_embeddings, news_id)
-        len_emb = tf.nn.embedding_lookup(self.len_embeddings, news_len)
-        len_emb = tf.layers.dense(inputs=len_emb, units=100)
-        len_emb = tf.layers.dropout(inputs=len_emb, rate=args.dropout_rate, training=self.is_train)
+        news_topic = tf.nn.embedding_lookup(params=self.topic_embeddings, ids=news_id)
+        news_text = tf.nn.embedding_lookup(params=self.doc_embeddings, ids=news_id)
+        len_emb = tf.nn.embedding_lookup(params=self.len_embeddings, ids=news_len)
+        len_emb = tf.compat.v1.layers.dense(inputs=len_emb, units=100)
+        len_emb = tf.compat.v1.layers.dropout(inputs=len_emb, rate=args.dropout_rate, training=self.is_train)
         len_emb = tf.tanh(self.batch_normal(len_emb, args))
         # implicit_emb=tf.concat([news_topic,len_emb],axis=-1)
         implicit_emb = tf.concat([news_topic, news_text, len_emb], axis=-1)
-        implicit_emb = tf.layers.dense(inputs=implicit_emb, units=200)
-        implicit_emb = tf.layers.dropout(inputs=implicit_emb, rate=args.dropout_rate, training=self.is_train)
+        implicit_emb = tf.compat.v1.layers.dense(inputs=implicit_emb, units=200)
+        implicit_emb = tf.compat.v1.layers.dropout(inputs=implicit_emb, rate=args.dropout_rate, training=self.is_train)
         implicit_emb = tf.tanh(self.batch_normal(implicit_emb, args))
         return tf.reshape(implicit_emb, [-1, 200])
 
     def _attention_unit(self, args, explicit_emb, implicit_emb, tag):
-        with tf.variable_scope('attention', reuse=tf.AUTO_REUSE):
+        with tf.compat.v1.variable_scope('attention', reuse=tf.compat.v1.AUTO_REUSE):
             if tag == 'p':
-                attention_w = tf.get_variable(name='attention_p_w', shape=[200, 200], dtype=tf.float32, trainable=True)
-                attention_b = tf.get_variable(name='attention_p_b', dtype=tf.float32, shape=[200, 1], trainable=True)
-                attention_q = tf.get_variable(name='attention_p_q', dtype=tf.float32, shape=[1, 200], trainable=True)
+                attention_w = tf.compat.v1.get_variable(name='attention_p_w', shape=[200, 200], dtype=tf.float32, trainable=True)
+                attention_b = tf.compat.v1.get_variable(name='attention_p_b', dtype=tf.float32, shape=[200, 1], trainable=True)
+                attention_q = tf.compat.v1.get_variable(name='attention_p_q', dtype=tf.float32, shape=[1, 200], trainable=True)
             elif tag == 't':
-                attention_w = tf.get_variable(name='attention_t_w', shape=[200, 200], dtype=tf.float32, trainable=True)
-                attention_b = tf.get_variable(name='attention_t_b', dtype=tf.float32, shape=[200, 1], trainable=True)
-                attention_q = tf.get_variable(name='attention_t_q', dtype=tf.float32, shape=[1, 200], trainable=True)
+                attention_w = tf.compat.v1.get_variable(name='attention_t_w', shape=[200, 200], dtype=tf.float32, trainable=True)
+                attention_b = tf.compat.v1.get_variable(name='attention_t_b', dtype=tf.float32, shape=[200, 1], trainable=True)
+                attention_q = tf.compat.v1.get_variable(name='attention_t_q', dtype=tf.float32, shape=[1, 200], trainable=True)
             elif tag == 'u':
-                attention_w = tf.get_variable(name='attention_u_w', shape=[200, 200], dtype=tf.float32, trainable=True)
-                attention_b = tf.get_variable(name='attention_u_b', dtype=tf.float32, shape=[200, 1], trainable=True)
-                attention_q = tf.get_variable(name='attention_u_q', dtype=tf.float32, shape=[1, 200], trainable=True)
+                attention_w = tf.compat.v1.get_variable(name='attention_u_w', shape=[200, 200], dtype=tf.float32, trainable=True)
+                attention_b = tf.compat.v1.get_variable(name='attention_u_b', dtype=tf.float32, shape=[200, 1], trainable=True)
+                attention_q = tf.compat.v1.get_variable(name='attention_u_q', dtype=tf.float32, shape=[1, 200], trainable=True)
 
             # attention_w = tf.layers.dropout(inputs=attention_w, rate=args.dropout_rate, training=self.is_train)
             # attention_b = tf.layers.dropout(inputs=attention_b, rate=args.dropout_rate, training=self.is_train)
@@ -185,12 +187,12 @@ class MODEL(object):
 
     def _decay_unit(self, args, news_embedding):
 
-        age_emb = tf.nn.embedding_lookup(self.age_embeddings, self.news_age)
-        age_emb = tf.reshape(tf.layers.dense(inputs=age_emb, units=200), [-1, 200])
+        age_emb = tf.nn.embedding_lookup(params=self.age_embeddings, ids=self.news_age)
+        age_emb = tf.reshape(tf.compat.v1.layers.dense(inputs=age_emb, units=200), [-1, 200])
         age_emb = tf.tanh(self.batch_normal(age_emb, args))
-        with tf.variable_scope('decay', reuse=tf.AUTO_REUSE):
-            decay_w = tf.get_variable(dtype=tf.float32, shape=[200, 200], name='decay_w', trainable=True)
-            decay_b = tf.get_variable(dtype=tf.float32, shape=[1, 200], name='decay_b', trainable=True)
+        with tf.compat.v1.variable_scope('decay', reuse=tf.compat.v1.AUTO_REUSE):
+            decay_w = tf.compat.v1.get_variable(dtype=tf.float32, shape=[200, 200], name='decay_w', trainable=True)
+            decay_b = tf.compat.v1.get_variable(dtype=tf.float32, shape=[1, 200], name='decay_b', trainable=True)
         alpha_d = tf.reshape(tf.tanh(tf.add(tf.matmul(age_emb, decay_w), decay_b)), shape=[-1, 200])
         decay_news = tf.multiply(alpha_d, news_embedding)
         # decay_news=tf.add(alpha_d, news_embedding)
@@ -211,49 +213,49 @@ class MODEL(object):
         news_emb = self._attention_unit(args, exp_emb, imp_emb, 'u')
         news_emb = tf.reshape(news_emb, shape=[-1, args.max_click_history, 200])
 
-        with tf.variable_scope('self_attention', reuse=tf.AUTO_REUSE):
-            self_w = tf.get_variable(name='self_w', shape=[200, 200], dtype=tf.float32, trainable=True)
-            self_b = tf.get_variable(name='self_b', shape=[200, 1], dtype=tf.float32, trainable=True)
-            self_q = tf.get_variable(name='self_1', shape=[1, 200], dtype=tf.float32, trainable=True)
+        with tf.compat.v1.variable_scope('self_attention', reuse=tf.compat.v1.AUTO_REUSE):
+            self_w = tf.compat.v1.get_variable(name='self_w', shape=[200, 200], dtype=tf.float32, trainable=True)
+            self_b = tf.compat.v1.get_variable(name='self_b', shape=[200, 1], dtype=tf.float32, trainable=True)
+            self_q = tf.compat.v1.get_variable(name='self_1', shape=[1, 200], dtype=tf.float32, trainable=True)
             alpha = []
             for i in range(args.max_click_history):
                 alpha_i = tf.matmul(self_q, tf.matmul(self_w, tf.reshape(news_emb[:, i, :], shape=[-1, 200]),
                                                       transpose_b=True) + self_b)
                 alpha.append(alpha_i)
-            alpha = tf.nn.softmax(tf.transpose(alpha), axis=-1)
-        clicked_sum = tf.reduce_sum(tf.multiply(news_emb, tf.reshape(alpha, shape=[-1, args.max_click_history, 1])),
+            alpha = tf.nn.softmax(tf.transpose(a=alpha), axis=-1)
+        clicked_sum = tf.reduce_sum(input_tensor=tf.multiply(news_emb, tf.reshape(alpha, shape=[-1, args.max_click_history, 1])),
                                     axis=1)
         clicked_emb = tf.reshape(clicked_sum, shape=[-1, 200])
 
         return clicked_emb
 
     def _build_train(self, args):
-        with tf.name_scope('train'):
+        with tf.compat.v1.name_scope('train'):
             self.base_loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.labels, logits=self.unnormized_p))
+                input_tensor=tf.nn.sigmoid_cross_entropy_with_logits(labels=self.labels, logits=self.unnormized_p))
 
-            idx = tf.reshape(tf.where(self.time_label > 0)[:, 0], [-1, 1])
+            idx = tf.reshape(tf.compat.v1.where(self.time_label > 0)[:, 0], [-1, 1])
 
             active_time = tf.gather_nd(self.active_time, idx)
             time_score = tf.gather_nd(self.time_score, idx)
             weight = tf.reshape(tf.gather_nd(self.weights, idx), [-1, 1])
 
-            count = tf.reduce_sum(self.active_time, 0)
-            count_reci = tf.reciprocal(count)
+            count = tf.reduce_sum(input_tensor=self.active_time, axis=0)
+            count_reci = tf.math.reciprocal(count)
 
             self.classify_loss = -tf.reduce_mean(
-                tf.reshape(tf.reduce_sum(self.active_time * tf.log(self.time_score + 0.0000001), axis=-1), [-1, 1]))
+                input_tensor=tf.reshape(tf.reduce_sum(input_tensor=self.active_time * tf.math.log(self.time_score + 0.0000001), axis=-1), [-1, 1]))
 
-            tv = tf.trainable_variables()
+            tv = tf.compat.v1.trainable_variables()
             l2_loss_list = []
             for v in tv:
                 if '_embedding' not in v.name:
                     l2_loss_list.append(tf.nn.l2_loss(v))
-            self.l2_loss = tf.reduce_sum(l2_loss_list)
+            self.l2_loss = tf.reduce_sum(input_tensor=l2_loss_list)
 
             self.loss = self.base_loss + args.time_weight * self.classify_loss + args.l2_weight * self.l2_loss
 
-            self.optimizer = tf.train.AdamOptimizer(args.lr).minimize(self.loss)
+            self.optimizer = tf.compat.v1.train.AdamOptimizer(args.lr).minimize(self.loss)
 
     def train(self, sess, feed_dict):
         return sess.run(self.optimizer, feed_dict)
@@ -314,7 +316,7 @@ class MODEL(object):
         if args.is_train:
             off = tf.Variable(tf.zeros([inputs.get_shape()[-1]]), trainable=False)
             scale = tf.Variable(tf.ones([inputs.get_shape()[-1]]), trainable=False)
-            mean, var = tf.nn.moments(inputs, [0])
+            mean, var = tf.nn.moments(x=inputs, axes=[0])
             epsilon = 0.001
             return tf.nn.batch_normalization(inputs, mean, var, off, scale, epsilon)
         return inputs

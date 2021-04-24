@@ -49,10 +49,10 @@ def load_data(args, history_list):
     #            break
     #print(time_nums)
 
-    f1=open('../data/content_data/newsid2titleid','r',encoding='utf-8')
-    f2=open('../data/content_data/newsid2categoryid','r',encoding='utf-8')
-    f3=open('../data/content_data/newsid2publishtime','r',encoding='utf-8')
-    f4=open('../data/content_data/newsid2len','r',encoding='utf-8')
+    f1=open('./data/content_data/newsid2titleid','r',encoding='utf-8')
+    f2=open('./data/content_data/newsid2categoryid','r',encoding='utf-8')
+    f3=open('./data/content_data/newsid2publishtime','r',encoding='utf-8')
+    f4=open('./data/content_data/newsid2len','r',encoding='utf-8')
     news_id_to_title=json.loads(f1.read())
     news_id_to_category=json.loads(f2.read())
     news_id_to_publishtime=json.loads(f3.read())
@@ -62,9 +62,9 @@ def load_data(args, history_list):
     f3.close()
     f4.close()
 	
-    f1 = open('../data/user_infos/id2history','r',encoding='utf-8')
-    f2 = open('../data/user_infos/id2city', 'r', encoding='utf-8')
-    f3 = open('../data/user_infos/id2region', 'r', encoding='utf-8')
+    f1 = open('./data/user_infos/id2history','r',encoding='utf-8')
+    f2 = open('./data/user_infos/id2city', 'r', encoding='utf-8')
+    f3 = open('./data/user_infos/id2region', 'r', encoding='utf-8')
     user_id_to_history=json.loads(f1.read())
     user_id_to_city=json.loads(f2.read())
     user_id_to_region=json.loads(f3.read())
@@ -175,7 +175,7 @@ def load_data(args, history_list):
 
     # set time_label
     
-    time_nums_dic=json.loads(open('../data/content_data/time_nums','r',encoding='utf-8').read())
+    time_nums_dic=json.loads(open('./data/content_data/time_nums','r',encoding='utf-8').read())
     time_nums=[0]*20
     for i in range(5,206):
         for j in range(len(time_divide)-1):

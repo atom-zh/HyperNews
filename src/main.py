@@ -1,12 +1,12 @@
 import argparse
 from data_loader import load_data
 from train import train
-from inference import inference
+#from inference import inference
 
 parser = argparse.ArgumentParser()
-# parser.add_argument('--train_file', type=str, default='E:\\dataset\\three months simplify\\temp.json', help='path to the training file')
-# parser.add_argument('--test_file', type=str, default='E:\\dataset\\three months simplify\\20170101.json', help='path to the test file')
-parser.add_argument('--file_directory', type=str, default='../data/four_weeks/', help='path to the files')
+#parser.add_argument('--train_file', type=str, default='./data/20170101.json', help='path to the training file')
+#parser.add_argument('--test_file', type=str, default='./data/20170101.json', help='path to the test file')
+parser.add_argument('--file_directory', type=str, default='./data/four_weeks/', help='path to the files')
 parser.add_argument('--first_train_file', type=int, default=20170101, help='first train file name')
 parser.add_argument('--train_file_num', type=int, default=1, help='number of train_file')
 parser.add_argument('--first_test_file', type=int, default=20170101, help='first test file name')
@@ -32,8 +32,8 @@ parser.add_argument('--dropout_rate', type=float, default=0.5, help='rate of dro
 parser.add_argument('--threshold', type=float, default=0.5, help='threshold for precision, recall,f1-score')
 args = parser.parse_args()
 
-# train_data=load_data(args)
-# test_data=load_data(args)
+#train_data=load_data(args)
+#test_data=load_data(args)
 
 print(args)
 train(args)
