@@ -8,25 +8,26 @@ class cfg:
     def read_config(section, option):
         # 读取配置文件
         config = configparser.ConfigParser()
-        config.readfp(open(config_file))
+        config.read_file(open(config_file))
         a = config.get(section, option)
-        print(a)
+        print('Read config: ' + '[' + section + ']: ' + 'option = ' + a)
+        return a
 
-    def add_config(section, option, value):
+    def write_config(section, option, value):
         # 写入配置文件
         config = configparser.ConfigParser()
-        # set a number of parameters
-        config.add_section(section)
+
+        try:
+            Config.read(config_file)
+        except:
+            # set a number of parameters
+            config.add_section(section)
+        else:
+            print('Write section already exist')
         config.set(section, option, value)
         # write to file
-        config.write(open(config_file, "w")) # 没有新建  存在打开
+        config.write(open(config_file, "a+")) # 没有新建  存在打开
+        print('Write config: ' + '[' + section + ']: ' + 'option = ' + value)
 
-    def modify_cofnig(section, option, value):
-        # 修改配置文件内容
-        fixConfig = configparser.ConfigParser()
-        fixConfig.read(config_file)
-        a = fixConfig.add_section(section)
-        fixConfig.set(section, option, value)
-        fixConfig.write(open(config_file, "r+")) #可以把r+改成其他方式，看看结果:)
-
-cfg.add_config('id2content', 'tatle', '20')
+#cfg.add_config('id2url', 'total', '20')
+cfg.write_config('id2url', 'total', str(20))

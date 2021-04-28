@@ -2,6 +2,7 @@ import requests
 import json
 import re
 from bs4 import BeautifulSoup
+from config_parser import cfg
 
 config_file = './data/config/config.ini'
 # one week test data
@@ -14,6 +15,7 @@ test_local_html = "url.html"
 def gen_id2url():
     table = []
     data = {}
+    count = 0
     f1 = open(dataset_01, 'r', encoding='utf-8')
     for line in f1:
         table.append(json.loads(line))
@@ -28,9 +30,10 @@ def gen_id2url():
         data['url'] = row['url']
         json_str = json.dumps(data)
         f2.write(json_str + '\n')
+        count = count + 1
         print()
     f2.close
-
+    cfg.write_config('id2url', 'total', str(count))
 
 def getHTMLText(url):
     try:
@@ -43,9 +46,7 @@ def getHTMLText(url):
         return None
 
 def removePunctuation(content):
-    """
-    文本去标点
-    """
+    #文本清洗，去标点
     punctuation = r"~!@#$%^&*()_+`{}|\[\]\:\";\-\\\='<>?,./，。、《》？；：‘“{【】}|、！@#￥%……&*（）——+=-"
     content = re.sub(r'[{}]+'.format(punctuation), '', content)
 
@@ -86,9 +87,13 @@ def getContent(html, eventId):
 
 def gen_id2content():
     table = []
+    # TODO: current and eventId need   str -> int
+    eventId = cfg.read_config('id2content', 'eventId', str(eventId))
+    current = cfg.write_config('id2content', 'current')
     f1 = open(id2url_file, 'r', encoding='utf-8')
-    for line in f1:
-        table.append(json.loads(line))
+    for current in f1:
+        line_content = json.load(current)
+        table.append(line_content)
         #print(json.loads(line))
     f1.close()
 
@@ -103,11 +108,13 @@ def gen_id2content():
         json_str = json.dumps(data, ensure_ascii=False)
         print(json_str)
         f2.write(json_str + '\n')
+
+        current ++
+        cfg.write_config('id2content', 'eventId', str(eventId))
+        cfg.write_config('id2content', 'current', str(count))
     f2.close
 
 def main():
-    #url = "http://news.qq.com/a/20170504/012032.htm"
-    #url = "https://www.adressa.no/nyheter/2016/12/31/Se-lesernes-nytt%C3%A5rsbilder-14000400.ece"
     #gen_id2url()
     gen_id2content()
 main()
