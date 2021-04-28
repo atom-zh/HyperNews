@@ -3,16 +3,24 @@ import json
 import re
 from bs4 import BeautifulSoup
 
+config_file = './data/config/config.ini'
+# one week test data
+dataset_01 = './data/one_week/20170101.json'
+id2url_file = './data/user_infos/id2url.json'
+id2content_file = './data/user_infos/id2content.json'
+
+test_local_html = "url.html"
+
 def gen_id2url():
     table = []
     data = {}
-    f1 = open('20170101.json', 'r', encoding='utf-8')
+    f1 = open(dataset_01, 'r', encoding='utf-8')
     for line in f1:
         table.append(json.loads(line))
         #print(json.loads(line))
     f1.close()
 
-    f2 = open('id2url.json', 'a+', encoding='utf-8')
+    f2 = open(id2url_file, 'a+', encoding='utf-8')
     for row in table:
         print(row['eventId'])
         #print(row['url'])
@@ -55,7 +63,7 @@ def getContent(html, eventId):
     if not html:
         return data
     soup = BeautifulSoup(html, "html.parser")
-    #soup = BeautifulSoup(open('url.html', encoding='utf-8'), features='html.parser')
+    #soup = BeautifulSoup(open(test_local_html, encoding='utf-8'), features='html.parser')
     title = soup.select("h1.title > span.t100")
     if not title:
         return data
@@ -78,13 +86,13 @@ def getContent(html, eventId):
 
 def gen_id2content():
     table = []
-    f1 = open('id2url.json', 'r', encoding='utf-8')
+    f1 = open(id2url_file, 'r', encoding='utf-8')
     for line in f1:
         table.append(json.loads(line))
         #print(json.loads(line))
     f1.close()
 
-    f2 = open('id2content.json', 'a+', encoding='utf-8')
+    f2 = open(id2content_file, 'a+', encoding='utf-8')
     for row in table:
         if row['url'] == 'http://adressa.no':
             print('Skip:' + row['url'])
